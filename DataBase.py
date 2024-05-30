@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from enum import Enum
+from aiogram.fsm.state import State, StatesGroup
 
 path = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/" )
 
@@ -44,7 +45,7 @@ class Data:
 
 
     #peer id, имя таблицы, уникальный идентификатор, значение, аргументы
-    def fill(self, table_name, *args):
+    def fill(self, table_name, *args, ifNone=True):
 
         """Заполняем таблицу"""
         
@@ -55,9 +56,14 @@ class Data:
         #вопросики
         quantity = (len(args)-1)*"?,"+"?"
         #если значения нет, то записываем
-        if self.cur.fetchone() is None:
+        if self.cur.fetchone() is None and ifNone:
             self.cur.execute(f"INSERT INTO {table_name} VALUES ({quantity})", (tuple(args)))
             #сохраняем
+            self.db.commit()
+        #записываем даже если есть значение
+        else:
+            self.cur.execute(f"INSERT INTO {table_name} VALUES ({quantity})", (tuple(args)))
+            # сохраняем
             self.db.commit()
 
             #print("Пользователь добавлен!")
@@ -166,6 +172,36 @@ class Get:
         tablename = self.table
         return db.ReturnValue(tablename=tablename, setvalue="defence", parameter=f"WHERE id = {id}")
 
+    def balance(self):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        return db.ReturnValue(tablename=tablename, setvalue="balance", parameter=f"WHERE id = {id}")
+
+    def exp(self):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        return db.ReturnValue(tablename=tablename, setvalue="exp", parameter=f"WHERE id = {id}")
+
+    def rep(self):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        return db.ReturnValue(tablename=tablename, setvalue="balance", parameter=f"WHERE id = {id}")
+
+    def lvl(self):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        return db.ReturnValue(tablename=tablename, setvalue="level", parameter=f"WHERE id = {id}")
+
+    def sp(self):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        return db.ReturnValue(tablename=tablename, setvalue="sp", parameter=f"WHERE id = {id}")
+
     def loc_img(self):
         db = self.db
         id = self.id
@@ -250,6 +286,35 @@ class Upd:
         tablename = self.table
         db.UpdateValue(tablename=tablename, nowvalue="defence", newvalue=newvalue, parameter=f"WHERE id = {id}")
 
+    def balance(self, newvalue):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        db.UpdateValue(tablename=tablename, nowvalue="balance", newvalue=newvalue, parameter=f"WHERE id = {id}")
+
+    def exp(self, newvalue):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        db.UpdateValue(tablename=tablename, nowvalue="exp", newvalue=newvalue, parameter=f"WHERE id = {id}")
+
+    def rep(self, newvalue):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        db.UpdateValue(tablename=tablename, nowvalue="rep", newvalue=newvalue, parameter=f"WHERE id = {id}")
+
+    def lvl(self, newvalue):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        db.UpdateValue(tablename=tablename, nowvalue="level", newvalue=newvalue, parameter=f"WHERE id = {id}")
+
+    def sp(self, newvalue):
+        db = self.db
+        id = self.id
+        tablename = self.table
+        db.UpdateValue(tablename=tablename, nowvalue="sp", newvalue=newvalue, parameter=f"WHERE id = {id}")
 
 class Character:
     def __init__(self, tablename, id):
@@ -306,6 +371,25 @@ class Character:
         get = self.get
         return get.defence()
 
+    def get_balance(self):
+        get = self.get
+        return get.balance()
+
+    def get_exp(self):
+        get = self.get
+        return get.exp()
+
+    def get_rep(self):
+        get = self.get
+        return get.rep()
+
+    def get_lvl(self):
+        get = self.get
+        return get.lvl()
+
+    def get_sp(self):
+        get = self.get
+        return get.sp()
 
     def upd_action(self, newvalue):
         upd = self.upd
@@ -355,3 +439,57 @@ class Character:
         upd = self.upd
         upd.defence(newvalue)
 
+    def upd_balance(self, newvalue):
+        upd = self.upd
+        upd.balance(newvalue)
+
+    def upd_exp(self, newvalue):
+        upd = self.upd
+        upd.exp(newvalue)
+
+    def upd_rep(self, newvalue):
+        upd = self.upd
+        upd.rep(newvalue)
+
+    def upd_lvl(self, newvalue):
+        upd = self.upd
+        upd.lvl(newvalue)
+
+    def upd_sp(self, newvalue):
+        upd = self.upd
+        upd.sp(newvalue)
+
+
+mob_data = {
+    "Дикий пёс": {
+        "name": "Дикий пёс",
+        "rarity": "Обычный",
+        "hp": 50,
+        "mana": 10,
+        "strength": 5,
+        "agility": 12,
+        "intellect": 5,
+        "defence": 2,
+        "magres": 4,
+        "manareg": 2
+    },
+}
+
+
+class Mob:
+    def __init__(self, name):
+        mob_info = mob_data.get(name, {})
+        self.name = mob_info.get("name", "")
+        self.rarity = mob_info.get("rarity", "")
+        self.hp = mob_info.get("hp", 0)
+        self.mana = mob_info.get("mana", 0)
+        self.strength = mob_info.get("strength", 0)
+        self.agility = mob_info.get("agility", 0)
+        self.intellect = mob_info.get("intellect", 0)
+        self.defence = mob_info.get("defence", 0)
+        self.magres = mob_info.get("magres", 0)
+        self.manareg = mob_info.get("manareg", 0)
+
+
+class FightStates(StatesGroup):
+    fighting = State()

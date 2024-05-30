@@ -1,4 +1,5 @@
-from DataBase import *
+from DataBase import Data, Elements
+import datetime
 db = Data("project")
 
 db.create_table("users",
@@ -38,13 +39,16 @@ db.create_table("users",
                 "pet", "INT",               # пет игрока
                 "maunt", "INT",             # маунт игрока
                 "race", "TEXT",             # раса
-                "class", "TEXT"             # класс
+                "class", "TEXT",            # класс
+                "rep", "INT",               # репутация
+                "sp", "INT",                # доступные очки навыков
+                "prof", "TEXT"              # профессии
                 )
 
 
 db.create_table("inv",
                 "id", "INT",                # айди игрока
-                "item_name", "BIGINT",      # название предмета
+                "item_name", "INT",         # название предмета
                 "count", "INT"              # количество
                 )
 
@@ -87,6 +91,7 @@ db.create_table("PCQ",                      #PlayersCompletedQuests
                 "quest_id", "TEXT",
                 "player_id", "INT",
                 "completed_date", "DATE",
+                "got_reward", "BOOL",
                 "PRIMARY KEY", "(player_id, quest_id)",
                 "FOREIGN KEY", "(player_id) REFERENCES users(id)")
 
@@ -99,12 +104,12 @@ db.create_table("PAQ",                      #PlayersActiveQuests
 
 
 items_db = {
-    "камень возврата": {
+    "1": {
         'name': 'Камень возврата',
         'type': 'artefact',
         'cost': 0
     },
-    "упырь": {
+    "2": {
         'name': 'Упырь',
         'type': 'pet',
         'level': 1,
@@ -113,7 +118,7 @@ items_db = {
         'damages': [Elements.air.value],
         'crit_damage': 0
     },
-    "дракон-фамильяр": {
+    "3": {
         'name': 'Дракон-фамильяр',
         'type': 'pet',
         'level': 30,
@@ -132,24 +137,41 @@ descriptions = {"desc_1": "Эх, знал бы ты, путник, как я л�
                 }
 
 
-actions = {
-    "tractir": {
-        "beer": 20,
-        "asd": 12,
-        "ads": 15,
-    }
-}
+commodity = {"1":
+                 {
+                    "image": "images/image1.png",
+                    "cost": 60,
+                    "description": "Хрустящие гренки",
+                    "action": "tractir",
+                    "item_name": "Гренки"},
+             "2":
+                 {
+                     "image": "images/image2.png",
+                     "cost": 40,
+                     "description": "Пышный хлеб",
+                     "action": "tractir",
+                     "item_name": "Хлеб"},
+             "3":
+                 {
+                     "image": "images/image3.png",
+                     "cost": 40,
+                     "description": "Прохладное пиво",
+                     "action": "tractir",
+                     "item_name": "Пиво"}
+             }
+
 
 
 NPCs = {
     "Геральд": {
         "phrase": "Здравствуй, путник. Сыграем в гвинт?",
-        "action": "shop",
+        "action": None,
         "quests": {
             "1": {
                 "name": "Пиво для бравого стражника",
                 "description": descriptions["desc_1"],
                 "task": "Принести пиво Геральду",
+                "required_items": ["Пиво"],
                 "required_completed": [],  # Список завершенных квестов, необходимых для доступа к этому квесту
                 "reward": {
                     "experience": 123,
@@ -181,67 +203,68 @@ NPCs = {
     },
 
     "Вильям": {
-        "phrase": "Здравия желаю заебал",
+        "phrase": "Здравия желаю!",
         "action": None,
         "quests": None
         },
     "Трактирщик": {
-        "phrase": "Купи пива заебал",
+        "phrase": "Чего желаете?",
         "action": "tractir",
-        "quests": None
+        "quests": None,
+        "service": "Приобрести предметы"
         },
     'Инженерное дело': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Кузнечное дело': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Кожевничество': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Наложение чар': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Портняжное дело': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Алхимия': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Начертание': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Ювелирное дело': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Травничество': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "ААА",
         "action": None,
         "quests": None
         },
     'Горное дело': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         },
     'Снятие шкур': {
-        "phrase": "Обучись ремеслу заебал",
+        "phrase": "В разработке! Доступно Травничество.",
         "action": None,
         "quests": None
         }
@@ -272,8 +295,38 @@ def get_NPCs_names():
 
     return result
 
-        
+def quest_check(PAQ, user):
+    for i in PAQ:
+        for j in NPCs:
+            flag = 1
+            requiredItems = []
+            try:
+                for k in NPCs[j]["quests"][i]["required_items"]:
+                    if int(db.ReturnValue("inv", "count", parameter=f"WHERE item_name = '{k}' AND id = {user.id}")) > 0:
+                        requiredItems.append(k)
+                        pass
+                    else:
+                        flag = 0
+                        requiredItems = []
+                        break
+                if flag:
+                    db.fill("PCQ", i, user.id, datetime.date.today(), False, ifNone=False)
+                    db.delete("PAQ", "quest_id", i, key_two="player_id", value_two=user.id)
+                    for k in requiredItems:
+                        db.delete("inv", "id", user.id, key_two="item_name", value_two=k)
+            except:
+                pass
+
+
+def get_reward(char, NPC_name, quest_id):
+    char.upd_balance(char.get_balance() + NPCs[NPC_name]["quests"][quest_id]["reward"]["money"])
+    char.upd_exp(char.get_exp() + NPCs[NPC_name]["quests"][quest_id]["reward"]["experience"])
+    char.upd_rep(char.get_rep() + NPCs[NPC_name]["quests"][quest_id]["reward"]["reputation"])
+
+
+def calculate_damage(attacker_strength, defender_defence):
+    damage = max(0, attacker_strength - defender_defence)
+    return damage
 
 
 
-races = ["эльф", "орк", "гном", "человек", "халфлинг", "нежить"]

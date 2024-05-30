@@ -3,6 +3,7 @@ import json
 from aiogram import types
 from aiogram.types import FSInputFile
 from DataBase import Data, Get
+
 db = Data("project")
 
 def generate_location(name: str,description: str, peaceful: bool, level: int, attachment: str, mobs, resources,
@@ -60,7 +61,7 @@ location = {
         "mobs": None,
         "resources": None,
         "NPCs": ["Геральд", "Вильям"],
-        "sublocations": ["Таверна", "Гильдия профессий"]
+        "sublocations": ["Таверна", "Гильдия профессий", "Трущобы"]
     },
     "Таверна": {
         "name": "Таверна",
@@ -83,15 +84,31 @@ location = {
         "resources": None,
         "NPCs": ['Инженерное дело', 'Кузнечное дело', 'Кожевничество', 'Наложение чар', 'Портняжное дело', 'Алхимия', 'Начертание', 'Ювелирное дело', 'Травничество', 'Горное дело', 'Снятие шкур'],
         "sublocations": ["Уэльгард"]
+    },
+    "Трущобы": {
+        "name": "Трущобы",
+        "description": 'Вы вошли в Трущобы.',
+        "peaceful": False,
+        "level": 2,
+        "attachment": 'slum.png',
+        "mobs": ["Дикий пёс"],
+        "resources": ["Подорожник"],
+        "NPCs": [],
+        "sublocations": ["Уэльгард"]
     }
 }
 
-def keyboard_location(location_name, location):
+def keyboard_location(location_name, location, user):
     arr = []
     if location[location_name]["peaceful"] is False:
         arr.append([types.KeyboardButton(text="Атаковать")])
     if not (location[location_name]["resources"] is None):
-        arr.append([types.KeyboardButton(text="Профнавык 1"), types.KeyboardButton(text="Профнавык 2"),types.KeyboardButton(text="Профнавык 3")])
+        try:
+            for i in db.ReturnValue("users", "profs", parameter=f"WHERE id = {user.id}").split():
+                if i != "":
+                    arr.append([types.KeyboardButton(text=f"{i}")])
+        except:
+            pass
     if not (location[location_name]["NPCs"] is None):
         k = 0
         for j in range(len(location[location_name]["NPCs"])//4+int(len(location[location_name]["NPCs"])%4 in [1,2,3])):
@@ -101,10 +118,10 @@ def keyboard_location(location_name, location):
         arr.append(list(types.KeyboardButton(text=f"{i}") for i in location[location_name]["sublocations"]))
     return types.ReplyKeyboardMarkup(keyboard=arr, resize_keyboard=True)
 
-def loc(location_name, message):
+def loc(location_name, message, user):
     return message.answer_photo(photo=FSInputFile(Get("locs", db.ReturnValue("locs","id", parameter=f"WHERE name = '{location_name}'")).loc_img()),
                                        caption=location[location_name]["description"],
-                                       reply_markup=keyboard_location(location_name, location))
+                                       reply_markup=keyboard_location(location_name, location, user))
 
 
 
